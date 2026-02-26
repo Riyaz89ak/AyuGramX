@@ -1,4 +1,4 @@
-name: Build AyuGramX Magic Audio
+name: Build AyuGramX Final Magic
 on:
   workflow_dispatch:
 
@@ -12,21 +12,25 @@ jobs:
 
       - name: Inject Audio Magic
         run: |
-          # ஆடியோ மாற்றங்கள்
+          # உங்கள் ஸ்பீக்கர் சத்தத்தை அப்படியே எடுக்கும் கோடிங்
           find . -name "MediaController.java" -exec sed -i 's/AudioSource.MIC/AudioSource.VOICE_COMMUNICATION/g' {} +
           find . -name "MediaController.java" -exec sed -i 's/noiseSuppression = true/noiseSuppression = false/g' {} +
 
       - name: Set up JDK 11
-        # பழைய சோர்ஸ் என்பதால் JDK 11-ல் முயற்சிப்போம்
         uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: 'temurin'
 
+      - name: Setup Gradle
+        # பழைய கிரேடுல் வெர்ஷனை (7.6) நாமே செட் செய்கிறோம்
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '7.6'
+
       - name: Build Universal APK
         run: |
           chmod +x gradlew
-          # எர்ரர்களைப் புறக்கணித்து பில்ட் செய்ய இந்த கமாண்ட் உதவும்
-          export GRADLE_OPTS="-Xmx4g"
-          ./gradlew assembleDebug -PgenerateUniversalApk=true --no-daemon -x test
+          # எர்ரர்களைப் புறக்கணித்து பில்ட் செய்ய பவர்ஃபுல் கமாண்ட்
+          ./gradlew assembleDebug -PgenerateUniversalApk=true --stacktrace -x test
           
