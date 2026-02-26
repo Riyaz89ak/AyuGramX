@@ -1,0 +1,38 @@
+name: Build AyuGramX Internal Audio
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Inject Audio Magic
+        run: |
+          # மைக் சத்தத்திற்கு பதில் சிஸ்டம் சத்தத்தை (Internal Audio) எடுக்கும் கோடிங்
+          # AyuGramX-ல் பாத் சற்று மாறுபடலாம், அதனால் find கமாண்ட் பயன்படுத்துகிறோம்
+          find . -name "MediaController.java" -exec sed -i 's/AudioSource.MIC/AudioSource.VOICE_COMMUNICATION/g' {} +
+          find . -name "MediaController.java" -exec sed -i 's/noiseSuppression = true/noiseSuppression = false/g' {} +
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build Universal APK
+        run: |
+          chmod +x gradlew
+          export GRADLE_OPTS="-Xmx4g"
+          # AyuGramX பில்ட் கமாண்ட்
+          ./gradlew assembleDebug -PgenerateUniversalApk=true
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AyuGramX-Magic-Audio
+          path: "**/build/outputs/apk/afat/debug/*universal.apk"
+          
